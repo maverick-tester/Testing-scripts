@@ -1,12 +1,20 @@
 self.addEventListener('push', function(event) {
-    console.log('Push message received!');
-    const messageText = event.data ? event.data.text() : 'You have a new alert!';
+    const data = event.data ? event.data.json() : { title: 'Default', body: 'Default message' };
+
     const options = {
-        body: messageText,
-        icon: 'https://cdn-icons-png.flaticon.com/512/1827/1827370.png', // Just a generic bell icon
-        vibrate: [200, 100, 200]
+        body: data.body,
+        // The main logo next to the text
+        icon: 'https://example.com/path/to/main-logo.png', 
+        // The tiny monochrome origin icon
+        badge: 'https://example.com/path/to/tiny-badge.png',
+        // A large image embedded inside the notification
+        image: 'https://example.com/path/to/large-banner.jpg',
+        
+        // Keeps the notification on screen until the user dismisses it
+        requireInteraction: true 
     };
+
     event.waitUntil(
-        self.registration.showNotification('Ngrok Lab Alert', options)
+        self.registration.showNotification(data.title, options)
     );
 });
