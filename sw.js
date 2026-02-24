@@ -1,20 +1,25 @@
-self.addEventListener('push', function(event) {
-    const data = event.data ? event.data.json() : { title: 'Default', body: 'Default message' };
+// Also inside public/sw.js (at the bottom)
+self.addEventListener('notificationclick', function(event) {
+    // 1. Immediately close the notification so it disappears
+    event.notification.close();
 
-    const options = {
-        body: data.body,
-        // The main logo next to the text
-        icon: 'https://example.com/path/to/main-logo.png', 
-        // The tiny monochrome origin icon
-        badge: 'https://example.com/path/to/tiny-badge.png',
-        // A large image embedded inside the notification
-        image: 'https://example.com/path/to/large-banner.jpg',
-        
-        // Keeps the notification on screen until the user dismisses it
-        requireInteraction: true 
-    };
+    // 2. Define the URL you want to force open
+    const targetUrl = 'https://example.com/your-lab-landing-page';
 
-    event.waitUntil(
-        self.registration.showNotification(data.title, options)
-    );
+    // 3. Figure out what exactly they clicked
+    if (event.action === 'execute_payload') {
+        // They clicked the "Update Now" button
+        console.log('Victim clicked the primary button.');
+        event.waitUntil(clients.openWindow(targetUrl));
+
+    } else if (event.action === 'ignore') {
+        // They clicked "Remind Me Later"
+        console.log('Victim dismissed the alert.');
+        // Do nothing else, the notification is already closed
+
+    } else {
+        // They clicked the main body of the notification (not a specific button)
+        console.log('Victim clicked the main notification body.');
+        event.waitUntil(clients.openWindow(targetUrl));
+    }
 });
