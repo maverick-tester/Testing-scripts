@@ -1,25 +1,31 @@
-// Also inside public/sw.js (at the bottom)
-self.addEventListener('notificationclick', function(event) {
-    // 1. Immediately close the notification so it disappears
-    event.notification.close();
-
-    // 2. Define the URL you want to force open
-    const targetUrl = 'https://example.com/your-lab-landing-page';
-
-    // 3. Figure out what exactly they clicked
-    if (event.action === 'execute_payload') {
-        // They clicked the "Update Now" button
-        console.log('Victim clicked the primary button.');
-        event.waitUntil(clients.openWindow(targetUrl));
-
-    } else if (event.action === 'ignore') {
-        // They clicked "Remind Me Later"
-        console.log('Victim dismissed the alert.');
-        // Do nothing else, the notification is already closed
-
-    } else {
-        // They clicked the main body of the notification (not a specific button)
-        console.log('Victim clicked the main notification body.');
-        event.waitUntil(clients.openWindow(targetUrl));
+self.addEventListener('push', function(event) {
+    let data;
+    
+    // Safely try to parse the JSON. If it fails, do not crash!
+    try {
+        data = event.data ? event.data.json() : {};
+    } catch (e) {
+        console.error('Failed to parse JSON, falling back to text:', e);
+        data = { 
+            title: 'Fallback Title', 
+            body: event.data ? event.data.text() : 'Default body' 
+        };
     }
+
+    // Ensure we have fallback text just in case the JSON was empty
+    const finalTitle = data.title || 'System Alert';
+    const finalBody = data.body || 'You have a new message.';
+
+    const options = {
+        body: finalBody,
+        icon: 'https://cdn-icons-png.flaticon.com/512/1827/1827370.png',
+        actions: [
+            { action: 'execute_payload', title: 'Update Now' },
+            { action: 'ignore', title: 'Remind Me Later' }
+        ]
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(finalTitle, options)
+    );
 });
