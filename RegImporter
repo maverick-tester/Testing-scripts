@@ -1,0 +1,43 @@
+param (
+    [Parameter(Mandatory=$true, HelpMessage="Path to the input .reg file")]
+    [string]$InputFile
+)
+
+# Validate the input file exists
+if (-Not (Test-Path $InputFile)) {
+    Write-Error "The file '$InputFile' does not exist."
+    exit
+}
+
+# Determine the directory of the input file to save the outputs there
+$basePath = Split-Path -Path $InputFile
+$tempReg = Join-Path -Path $basePath -ChildPath "temp_hive_mod.reg"
+
+Write-Output "Processing input file: $InputFile"
+
+# Replace HKLM with HKCU\HELLO and save to a temporary file
+Write-Output "Replacing HKLM\ with HKCU\HELLO safely..."
+$content = Get-Content -Path $InputFile -Raw -Encoding Unicode
+$updatedContent = $content -replace "HKEY_LOCAL_MACHINE", "HKEY_CURRENT_USER\HELLO"
+Set-Content -Path $tempReg -Value $updatedContent -Encoding Unicode
+
+# Import the modified temporary .reg file
+Write-Output "Importing modified data into temporary HKCU\HELLO key..."
+reg import $tempReg
+
+# Save the registry keys as three separate binary .hive files (Original script behavior)
+Write-Output "Exporting SAM, SECURITY, and SYSTEM to binary .hive files..."
+$samOut = Join-Path -Path $basePath -ChildPath "SAM.hive"
+$secOut = Join-Path -Path $basePath -ChildPath "SECURITY.hive"
+$sysOut = Join-Path -Path $basePath -ChildPath "SYSTEM.hive"
+
+reg save HKEY_CURRENT_USER\HELLO\SAM $samOut /y
+reg save HKEY_CURRENT_USER\HELLO\SECURITY $secOut /y
+reg save HKEY_CURRENT_USER\HELLO\SYSTEM $sysOut /y
+
+# Clean up the registry and the temporary file
+Write-Output "Cleaning up temporary registry keys and files..."
+reg delete HKEY_CURRENT_USER\HELLO /f 
+Remove-Item -Path $tempReg -Force
+
+Write-Output "Done! The output files are located in: $basePath"
