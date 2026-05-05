@@ -10,9 +10,10 @@ def get_boot_key():
             path = f"{base_path}\\{key_name}"
             # Open the key with Read rights
             with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path, 0, winreg.KEY_READ) as hkey:
-                # QueryInfoKey returns (num_subkeys, num_values, last_modified, class_name)
-                # We need the 4th element [3]
-                class_name = winreg.QueryInfoKey(hkey)[3]
+                # QueryInfoKey returns (class_name, num_subkeys, last_modified)
+                # The 'Class' string is at index 0
+                info = winreg.QueryInfoKey(hkey)
+                class_name = info[0]
                 scrambled_hex += class_name
 
         # Convert hex string to byte array
@@ -28,7 +29,7 @@ def get_boot_key():
         return final_key.hex()
         
     except PermissionError:
-        return "Error: You must run this script as Administrator."
+        return "Error: Access Denied. You must run this terminal as Administrator."
     except Exception as e:
         return f"Error: {str(e)}"
 
