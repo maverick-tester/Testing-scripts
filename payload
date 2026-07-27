@@ -1,0 +1,1 @@
+cl /EHsc LegacyHive.cpp /link userenv.lib advapi32.lib ntdll.lib offreg.lib Rpcrt4.lib
