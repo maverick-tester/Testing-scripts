@@ -1,1 +1,1 @@
-x86_64-w64-mingw32-g++ -O2 -std=c++17 -DUNICODE -D_UNICODE -municode original_main.cpp -o LegacyHive_Original.exe -lntdll -luserenv -ladvapi32 -lshell32 -lrpcrt4 -static-libgcc -static-libstdc++
+reg query HKCU\Software\Classes\CLSID\{9FC8E510-A27C-4B3B-B9A3-BF65F00256A8}\InprocServer32
