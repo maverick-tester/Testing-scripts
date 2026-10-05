@@ -1,1 +1,14 @@
-cl /nologo /EHsc /UNICODE /D_UNICODE /O2 /MT /wd4005 LegacyHive.cpp offreg.h offreg.lib userenv.lib advapi32.lib ntdll.lib offreg.lib Rpcrt4.lib
+# Replace with your actual domain and group name
+$GroupName = "YourADGroupName"
+$Searcher = [adsisearcher]"(sAMAccountName=$GroupName)"
+$Group = $Searcher.FindOne()
+
+if ($Group) {
+    $GroupEntry = $Group.GetDirectoryEntry()
+    # Loop through and display the distinguished name of each member
+    foreach ($Member in $GroupEntry.member) {
+        $Member
+    }
+} else {
+    Write-Host "Group not found." -ForegroundColor Red
+}
