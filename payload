@@ -1,14 +1,6 @@
-# Replace with your actual domain and group name
-$GroupName = "YourADGroupName"
-$Searcher = [adsisearcher]"(sAMAccountName=$GroupName)"
-$Group = $Searcher.FindOne()
-
-if ($Group) {
-    $GroupEntry = $Group.GetDirectoryEntry()
-    # Loop through and display the distinguished name of each member
-    foreach ($Member in $GroupEntry.member) {
-        $Member
-    }
-} else {
-    Write-Host "Group not found." -ForegroundColor Red
-}
+$RootDSE = [ADSI]"LDAP://RootDSE"
+$ConfigPath = $RootDSE.configurationNamingContext
+$Searcher = New-Object System.DirectoryServices.DirectorySearcher
+$Searcher.SearchRoot = [ADSI]"LDAP://$ConfigPath"
+$Searcher.Filter = "(&(objectClass=serviceConnectionPoint)(name=*RightsManagementServices*))"
+$Searcher.FindAll() | ForEach-Object { $_.Path }
